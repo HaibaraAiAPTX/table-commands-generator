@@ -128,7 +128,10 @@ export class BuildinStateInterpreter extends CommandInterpreter {
       })
     } else {
       // 退化为非合并
-      this.state.updateCell(row, col, { merge: undefined })
+      this.state.updateCell(row, col, {
+        merge: undefined,
+        isMergedPlaceholder: undefined,
+      })
     }
   }
 
