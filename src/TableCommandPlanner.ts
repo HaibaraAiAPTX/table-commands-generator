@@ -12,7 +12,7 @@ type MergeCellInfo = {
 /**
  * 事务层：将核心模型的操作抽象为一系列可移植的命令
  */
-export class TableCoreTransaction {
+export class TableCommandPlanner {
   private core: TableState
 
   private generatedCommands: TableCommand[] = []
@@ -40,6 +40,16 @@ export class TableCoreTransaction {
    */
   public getCommands(): TableCommand[] {
     return this.generatedCommands
+  }
+
+  /**
+   * 获取已生成的命令列表，并重置命令缓存
+   * @returns
+   */
+  public getNewCommandsAndReset(): TableCommand[] {
+    const cmds = this.generatedCommands
+    this.generatedCommands = []
+    return cmds
   }
 
   /** --------------- 基础工具 --------------- */
@@ -77,7 +87,7 @@ export class TableCoreTransaction {
    * @param count
    * @returns
    */
-  public insertRow(r: number, count = 1): void {
+  public insertRow(r: number, count = 1): TableCommand[] | undefined {
     if (count <= 0 || r < 0) return
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
@@ -121,7 +131,10 @@ export class TableCoreTransaction {
 
     // 3) 将本次新增命令应用到核心状态，保持事务内后续操作可见性
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 
   /**
@@ -130,7 +143,7 @@ export class TableCoreTransaction {
    * @param count
    * @returns
    */
-  public insertCol(c: number, count = 1): void {
+  public insertCol(c: number, count = 1): TableCommand[] | undefined {
     if (count <= 0 || c < 0) return
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
@@ -174,7 +187,10 @@ export class TableCoreTransaction {
 
     // 3) 将本次新增命令应用到核心状态
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 
   /** --------------- 行列删除 --------------- */
@@ -185,7 +201,7 @@ export class TableCoreTransaction {
    * @param count
    * @returns
    */
-  public deleteRow(r: number, count = 1): void {
+  public deleteRow(r: number, count = 1): TableCommand[] | undefined {
     if (count <= 0) return
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
@@ -298,7 +314,10 @@ export class TableCoreTransaction {
 
     // 4) 应用到核心状态
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 
   /**
@@ -307,7 +326,7 @@ export class TableCoreTransaction {
    * @param count
    * @returns
    */
-  public deleteCol(c: number, count = 1): void {
+  public deleteCol(c: number, count = 1): TableCommand[] | undefined {
     if (count <= 0) return
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
@@ -419,7 +438,10 @@ export class TableCoreTransaction {
 
     // 4) 应用到核心状态
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 
   /** --------------- 合并/拆分 --------------- */
@@ -436,7 +458,7 @@ export class TableCoreTransaction {
     startCol: number,
     endRow: number,
     endCol: number,
-  ): void {
+  ): TableCommand[] | undefined {
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
     // 1) 直接展开为属性命令（主单元格 + 占位符），不单独发 MERGE_CELL
@@ -475,7 +497,10 @@ export class TableCoreTransaction {
 
     // 4) 应用到核心状态
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 
   /**
@@ -484,7 +509,7 @@ export class TableCoreTransaction {
    * @param col
    * @returns
    */
-  public unmerge(row: number, col: number): void {
+  public unmerge(row: number, col: number): TableCommand[] | undefined {
     // 读取区域（老坐标系）
     const main = this.core.getCell(row, col)
     const rowSpan = main?.merge?.rowSpan ?? 1
@@ -513,6 +538,9 @@ export class TableCoreTransaction {
 
     // 4) 应用到核心状态
     const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) this.interpreter.applyCommands(newly)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
   }
 }

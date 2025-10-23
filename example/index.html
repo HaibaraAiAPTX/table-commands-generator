@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>table commands generator example</title>
+  </head>
+  <body>
+    <div class="mb-5">
+      <form class="flex gap-x-4">
+        <div>
+          <label for="row">Row:</label>
+          <input id="row" />
+        </div>
+        <div>
+          <label for="col">Column:</label>
+          <input id="col" />
+        </div>
+        <div>
+          <button type="submit" id="submit">Generate</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="table-container"></div>
+
+    <textarea class="mt-5" id="commands" rows="10" cols="50"></textarea>
+    <button type="button" id="apply-commands">Apply Commands</button>
+  </body>
+</html>

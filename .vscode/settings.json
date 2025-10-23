@@ -7,5 +7,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
-  }
+  },
+  "typescript.experimental.useTsgo": true,
+  "css.lint.unknownAtRules": "ignore"
 }

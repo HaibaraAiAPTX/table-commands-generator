@@ -1,10 +1,10 @@
 import { expect, test } from '@rstest/core'
-import { TableCoreTransaction, TableState } from '../src'
+import { TableCommandPlanner, TableState } from '../src'
 import { renderHtmlTable } from './utils'
 
 function createTable(row: number, col: number) {
   const core = new TableState(row, col)
-  const tx = new TableCoreTransaction(core)
+  const tx = new TableCommandPlanner(core)
 
   return { core, tx }
 }
@@ -33,7 +33,7 @@ test('getCommands after insertRow', async () => {
 
 test('autoClear false', () => {
   const { core } = createTable(5, 5)
-  const tx = new TableCoreTransaction(core, { autoClear: false })
+  const tx = new TableCommandPlanner(core, { autoClear: false })
   tx.insertRow(2)
   let commands = tx.getCommands()
   expect(commands).toHaveLength(1)
