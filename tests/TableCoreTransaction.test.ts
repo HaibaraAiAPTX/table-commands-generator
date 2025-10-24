@@ -135,6 +135,28 @@ test('mergeCells', async () => {
   expect(core.getGridData()).toEqual(oldGrid)
 })
 
+test('merge multiple already merged cells', async () => {
+  const { core, tx } = createTable(6, 6)
+
+  // Create two adjacent merged regions
+  tx.merge(1, 1, 2, 2)
+  tx.merge(2, 3, 3, 4)
+  await expect(renderHtmlTable(core.getGridData())).toMatchFileSnapshot(
+    './__snapshots__/TableCoreTransaction/merge multiple already merged cells.before.html',
+  )
+
+  // Merge across both regions to combine them
+  tx.merge(1, 1, 3, 4)
+  await expect(renderHtmlTable(core.getGridData())).toMatchFileSnapshot(
+    './__snapshots__/TableCoreTransaction/merge multiple already merged cells.after.html',
+  )
+
+  // Merging an already merged sub-region should be a no-op
+  const oldGrid = core.getGridData()
+  tx.merge(1, 2, 1, 3)
+  expect(core.getGridData()).toEqual(oldGrid)
+})
+
 test('unmergeCells', async () => {
   const { core, tx } = createTable(5, 5)
   tx.merge(1, 1, 2, 3)

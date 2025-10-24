@@ -1,5 +1,11 @@
 # @aptx/table-commands-generator
 
+## 0.1.3
+
+### Patch Changes
+
+- 修复合并多个已经合并过的单元格，不能合并成一个更大单元格的bug
+
 ## 0.1.2
 
 ### Patch Changes
