@@ -59,7 +59,7 @@ export class TableCommandPlanner {
   }
 
   /** 简单遍历：基于边界全表扫描（稀疏存储下依然安全，只是 O(R*C)） */
-  private forEachMainMergedCell(visitor: (info: MergeCellInfo) => void) {
+  public forEachMainMergedCell(visitor: (info: MergeCellInfo) => void) {
     const rows = this.core.getRowCount()
     const cols = this.core.getColCount()
     for (let r = 0; r < rows; r++) {

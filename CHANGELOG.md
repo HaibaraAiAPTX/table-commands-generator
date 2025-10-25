@@ -1,5 +1,11 @@
 # @aptx/table-commands-generator
 
+## 0.1.4
+
+### Patch Changes
+
+- 暴露内部方法
+
 ## 0.1.3
 
 ### Patch Changes
