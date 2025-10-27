@@ -1,5 +1,11 @@
 # @aptx/table-commands-generator
 
+## 0.1.5
+
+### Patch Changes
+
+- 区分开 applyCommands 和 applyCommand 方法，将 break 改为 return，新增 applyCommandAsync 方法，方便实现类的异步使用
+
 ## 0.1.4
 
 ### Patch Changes

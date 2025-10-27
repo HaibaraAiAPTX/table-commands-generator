@@ -1,6 +1,6 @@
 {
   "name": "@aptx/table-commands-generator",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "a simple table operation commands generator",
   "exports": {

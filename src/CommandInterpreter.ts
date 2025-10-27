@@ -5,49 +5,79 @@ import { TableCommand } from './Commands'
  * 分派给子类去完成。子类只需实现原子操作（handleXXX）。
  */
 export abstract class CommandInterpreter {
-  public applyCommands(cmds: TableCommand[]): void {
+  /**
+   * 批量执行命令
+   * @param cmds
+   */
+  public applyCommands(cmds: TableCommand[]) {
     for (const cmd of cmds) {
-      switch (cmd.type) {
-        case 'INSERT_ROW':
-          this.handleInsertRow(cmd.index, cmd.count)
-          break
-        case 'INSERT_COL':
-          this.handleInsertCol(cmd.index, cmd.count)
-          break
-        case 'DELETE_ROW':
-          this.handleDeleteRow(cmd.index, cmd.count)
-          break
-        case 'DELETE_COL':
-          this.handleDeleteCol(cmd.index, cmd.count)
-          break
-        case 'SET_CELL_ATTR':
-          this.handleSetCellAttr(cmd.row, cmd.col, cmd.attr, cmd.value)
-          break
-        case 'CLEAR_CELL_ATTR':
-          this.handleClearCellAttr(cmd.row, cmd.col, cmd.attr)
-          break
-      }
+      this.applyCommand(cmd)
     }
   }
 
-  protected abstract handleInsertRow(index: number, count: number): void
+  /**
+   * 异步批量执行命令
+   * @param cmds
+   * @returns
+   */
+  public async applyCommandsAsync(cmds: TableCommand[]): Promise<void> {
+    for (const cmd of cmds) {
+      await this.applyCommand(cmd)
+    }
+  }
 
-  protected abstract handleInsertCol(index: number, count: number): void
+  public applyCommand(cmd: TableCommand) {
+    switch (cmd.type) {
+      case 'INSERT_ROW':
+        return this.handleInsertRow(cmd.index, cmd.count)
 
-  protected abstract handleDeleteRow(index: number, count: number): void
+      case 'INSERT_COL':
+        return this.handleInsertCol(cmd.index, cmd.count)
 
-  protected abstract handleDeleteCol(index: number, count: number): void
+      case 'DELETE_ROW':
+        return this.handleDeleteRow(cmd.index, cmd.count)
+
+      case 'DELETE_COL':
+        return this.handleDeleteCol(cmd.index, cmd.count)
+
+      case 'SET_CELL_ATTR':
+        return this.handleSetCellAttr(cmd.row, cmd.col, cmd.attr, cmd.value)
+
+      case 'CLEAR_CELL_ATTR':
+        return this.handleClearCellAttr(cmd.row, cmd.col, cmd.attr)
+    }
+  }
+
+  protected abstract handleInsertRow(
+    index: number,
+    count: number,
+  ): void | Promise<void>
+
+  protected abstract handleInsertCol(
+    index: number,
+    count: number,
+  ): void | Promise<void>
+
+  protected abstract handleDeleteRow(
+    index: number,
+    count: number,
+  ): void | Promise<void>
+
+  protected abstract handleDeleteCol(
+    index: number,
+    count: number,
+  ): void | Promise<void>
 
   protected abstract handleSetCellAttr(
     row: number,
     col: number,
     attr: 'rowSpan' | 'colSpan' | 'isMergedPlaceholder',
     value: number | boolean | undefined,
-  ): void
+  ): void | Promise<void>
 
   protected abstract handleClearCellAttr(
     row: number,
     col: number,
     attr: 'rowSpan' | 'colSpan' | 'isMergedPlaceholder',
-  ): void
+  ): void | Promise<void>
 }
