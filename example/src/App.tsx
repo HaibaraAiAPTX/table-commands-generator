@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import TableCanvas from './components/TableCanvas'
 import TableControls from './components/TableControls'
 import TableConfig from './components/TableConfig'
@@ -6,6 +6,7 @@ import CellEditorOverlay from './components/CellEditorOverlay'
 import CommandLog from './components/CommandLog'
 import { CanvasViewport } from './components/CanvasViewport'
 import { useTableState } from './hooks/useTableState'
+import { getEditingRect } from './utils/editingRect'
 import type { CanvasConfig } from './types'
 
 const DEFAULT_CONFIG: CanvasConfig = {
@@ -22,6 +23,12 @@ export default function App() {
   const [editorValue, setEditorValue] = useState('')
 
   const disabled = !s.grid
+
+  // Calculate editing rect using getEditingRect for proper merged cell handling
+  const editingRect = useMemo(() => {
+    if (!s.editingCell || !s.grid) return null
+    return getEditingRect(s.grid, s.editingCell, DEFAULT_CONFIG)
+  }, [s.editingCell, s.grid])
 
   const handleCommit = () => {
     if (s.editingCell) {
@@ -96,6 +103,7 @@ export default function App() {
                     config={DEFAULT_CONFIG}
                     onCellDoubleClick={s.startEditing}
                     onSelectionChange={s.setSelection}
+                    editingRect={editingRect}
                   />
                   <CellEditorOverlay
                     open={!!s.editingCell}
@@ -103,10 +111,10 @@ export default function App() {
                     onChange={setEditorValue}
                     onCommit={handleCommit}
                     onCancel={s.stopEditing}
-                    x={s.editingCell ? s.editingCell.col * DEFAULT_CONFIG.cellWidth : 0}
-                    y={s.editingCell ? s.editingCell.row * DEFAULT_CONFIG.cellHeight : 0}
-                    width={DEFAULT_CONFIG.cellWidth}
-                    height={DEFAULT_CONFIG.cellHeight}
+                    x={editingRect?.x ?? 0}
+                    y={editingRect?.y ?? 0}
+                    width={editingRect?.width ?? DEFAULT_CONFIG.cellWidth}
+                    height={editingRect?.height ?? DEFAULT_CONFIG.cellHeight}
                   />
                 </CanvasViewport>
               </div>
