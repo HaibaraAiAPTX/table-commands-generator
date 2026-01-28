@@ -59,7 +59,8 @@ export function renderTextLayer(args: {
   cellText: (row: number, col: number) => string
   editingRect?: { x: number; y: number; width: number; height: number }
 }): void {
-  const { ctx, grid, config, cellText, editingRect } = args
+  const { ctx, width, height, grid, config, cellText, editingRect } = args
+  ctx.clearRect(0, 0, width, height)
   ctx.font = config.font
   ctx.textBaseline = 'middle'
   ctx.fillStyle = config.textColor

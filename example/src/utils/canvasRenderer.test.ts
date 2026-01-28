@@ -63,6 +63,35 @@ describe('canvasRenderer', () => {
 })
 
 describe('canvasRenderer layers', () => {
+  it('clears the text layer before drawing', () => {
+    const ctx = mockCtx()
+    const config: CanvasConfig = {
+      cellWidth: 100,
+      cellHeight: 40,
+      gridColor: '#e0e0e0',
+      selectionColor: 'rgba(59,130,246,0.2)',
+      textColor: '#333',
+      font: '14px sans-serif',
+    }
+
+    const grid = {
+      rows: 1,
+      cols: 1,
+      cells: new Map([[0, new Map([[0, {}]])]]),
+    }
+
+    renderTextLayer({
+      ctx,
+      width: 200,
+      height: 80,
+      grid: grid as any,
+      config,
+      cellText: () => '',
+    })
+
+    expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 200, 80)
+  })
+
   it('skips text inside the editing rect', () => {
     const ctx = mockCtx()
     const config: CanvasConfig = {
