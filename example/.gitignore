@@ -1,0 +1,7 @@
+# coding agent
+.agents/
+.claude/
+.codex/
+.opencode/
+
+node_modules/
