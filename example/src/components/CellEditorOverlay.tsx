@@ -12,10 +12,13 @@ export default function CellEditorOverlay(props: {
   onCancel: () => void
 }): JSX.Element | null {
   const ref = useRef<HTMLInputElement | null>(null)
+  const actionRef = useRef<'commit' | 'cancel' | null>(null)
 
   useEffect(() => {
-    if (props.open) ref.current?.focus()
-  }, [props.open])
+    if (!props.open) return
+    actionRef.current = null
+    ref.current?.focus()
+  }, [props.open, props.x, props.y])
 
   if (!props.open) return null
 
@@ -24,6 +27,8 @@ export default function CellEditorOverlay(props: {
   const x = props.x - 1
   const y = props.y - 1
 
+  const lineHeight = Math.max(0, height - 4)
+
   return (
     <input
       ref={ref}
@@ -31,14 +36,30 @@ export default function CellEditorOverlay(props: {
       value={props.value}
       onChange={(e) => props.onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') props.onCommit()
-        if (e.key === 'Escape') props.onCancel()
+        if (e.key === 'Enter') {
+          actionRef.current = 'commit'
+          props.onCommit()
+        }
+        if (e.key === 'Escape') {
+          actionRef.current = 'cancel'
+          props.onCancel()
+        }
       }}
-      className="absolute left-0 top-0 box-border border-2 border-indigo-500 outline-none bg-white shadow-lg rounded-sm transition-all animate-fade-in text-sm font-medium text-slate-900 focus:ring-2 focus:ring-indigo-200"
+      onBlur={() => {
+        if (actionRef.current) return
+        actionRef.current = 'commit'
+        props.onCommit()
+      }}
+      className="absolute left-0 top-0 box-border border-2 border-indigo-500 outline-none bg-white shadow-lg rounded-sm transition-opacity animate-fade-in text-sm font-medium text-slate-900 focus:ring-2 focus:ring-indigo-200 p-0"
       style={{
         width: `${width}px`,
         height: `${height}px`,
         transform: `translate(${x}px, ${y}px)`,
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        paddingTop: '0px',
+        paddingBottom: '0px',
+        lineHeight: `${lineHeight}px`,
       }}
     />
   )

@@ -43,4 +43,57 @@ describe('CellEditorOverlay', () => {
     fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' })
     expect(onCommit).toHaveBeenCalled()
   })
+
+  it('refocuses when position changes while open', () => {
+    const { rerender } = render(
+      <CellEditorOverlay
+        open
+        value=""
+        x={0}
+        y={0}
+        width={100}
+        height={40}
+        onChange={() => {}}
+        onCommit={() => {}}
+        onCancel={() => {}}
+      />,
+    )
+    const input = screen.getByRole('textbox') as HTMLInputElement
+    expect(input).toHaveFocus()
+    input.blur()
+    expect(input).not.toHaveFocus()
+    rerender(
+      <CellEditorOverlay
+        open
+        value=""
+        x={10}
+        y={20}
+        width={100}
+        height={40}
+        onChange={() => {}}
+        onCommit={() => {}}
+        onCancel={() => {}}
+      />,
+    )
+    expect(screen.getByRole('textbox')).toHaveFocus()
+  })
+
+  it('commits on blur', () => {
+    const onCommit = vi.fn()
+    render(
+      <CellEditorOverlay
+        open
+        value=""
+        x={0}
+        y={0}
+        width={100}
+        height={40}
+        onChange={() => {}}
+        onCommit={onCommit}
+        onCancel={() => {}}
+      />,
+    )
+    fireEvent.blur(screen.getByRole('textbox'))
+    expect(onCommit).toHaveBeenCalled()
+  })
 })

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import TableCanvas from './components/TableCanvas'
 import TableControls from './components/TableControls'
 import TableConfig from './components/TableConfig'
@@ -7,7 +7,7 @@ import CommandLog from './components/CommandLog'
 import { CanvasViewport } from './components/CanvasViewport'
 import { useTableState } from './hooks/useTableState'
 import { getEditingRect } from './utils/editingRect'
-import type { CanvasConfig } from './types'
+import type { CanvasConfig, EditingCell } from './types'
 
 const DEFAULT_CONFIG: CanvasConfig = {
   cellWidth: 120,
@@ -21,6 +21,7 @@ const DEFAULT_CONFIG: CanvasConfig = {
 export default function App() {
   const s = useTableState()
   const [editorValue, setEditorValue] = useState('')
+  const [editorOriginalValue, setEditorOriginalValue] = useState('')
 
   const disabled = !s.grid
 
@@ -30,12 +31,34 @@ export default function App() {
     return getEditingRect(s.grid, s.editingCell, DEFAULT_CONFIG)
   }, [s.editingCell, s.grid])
 
-  const handleCommit = () => {
-    if (s.editingCell) {
-      s.setCellText(s.editingCell.row, s.editingCell.col, editorValue)
-      s.stopEditing()
+  const getCellValue = useCallback((row: number, col: number) => {
+    return s.cellContents.get(row)?.get(col) ?? ''
+  }, [s.cellContents])
+
+  useEffect(() => {
+    if (!s.editingCell) {
+      setEditorValue('')
+      setEditorOriginalValue('')
     }
-  }
+  }, [s.editingCell])
+
+  const handleStartEditing = useCallback((cell: EditingCell) => {
+    const nextValue = getCellValue(cell.row, cell.col)
+    setEditorValue(nextValue)
+    setEditorOriginalValue(nextValue)
+    s.startEditing(cell)
+  }, [getCellValue, s])
+
+  const handleCommit = useCallback(() => {
+    if (!s.editingCell) return
+    s.setCellText(s.editingCell.row, s.editingCell.col, editorValue)
+    s.stopEditing()
+  }, [editorValue, s])
+
+  const handleCancel = useCallback(() => {
+    setEditorValue(editorOriginalValue)
+    s.stopEditing()
+  }, [editorOriginalValue, s])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50">
@@ -101,16 +124,17 @@ export default function App() {
                     selection={s.grid ? s.selection : null}
                     cellText={(r, c) => s.cellContents.get(r)?.get(c) ?? ''}
                     config={DEFAULT_CONFIG}
-                    onCellDoubleClick={s.startEditing}
+                    onCellDoubleClick={handleStartEditing}
                     onSelectionChange={s.setSelection}
                     editingRect={editingRect}
                   />
                   <CellEditorOverlay
+                    key={s.editingCell ? `${s.editingCell.row}-${s.editingCell.col}` : 'cell-editor'}
                     open={!!s.editingCell}
                     value={editorValue}
                     onChange={setEditorValue}
                     onCommit={handleCommit}
-                    onCancel={s.stopEditing}
+                    onCancel={handleCancel}
                     x={editingRect?.x ?? 0}
                     y={editingRect?.y ?? 0}
                     width={editingRect?.width ?? DEFAULT_CONFIG.cellWidth}
