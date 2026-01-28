@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { RenderingData } from '@aptx/table-commands-generator'
-import { findMergedCellMain, expandSelectionToMergedCells } from '../hooks/useCanvasInteraction'
+import { expandSelectionToMergedCells } from '../hooks/useCanvasInteraction'
+import { findMergedCellMain } from './mergedCells'
 
 describe('selection expansion with merged cells', () => {
   it('should expand selection when passing through a merged cell', () => {

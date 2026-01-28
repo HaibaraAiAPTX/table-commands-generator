@@ -1,6 +1,6 @@
 import type { RenderingData } from '@aptx/table-commands-generator'
 import type { CanvasConfig, EditingCell } from '../types'
-import { findMergedCellMain } from '../hooks/useCanvasInteraction'
+import { findMergedCellMain } from './mergedCells'
 
 export function getEditingRect(
   grid: RenderingData,

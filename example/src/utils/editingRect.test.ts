@@ -45,4 +45,21 @@ describe('getEditingRect', () => {
       colSpan: 2,
     })
   })
+
+  it('uses merged main cell when editing a placeholder cell', () => {
+    const core = createTableCore({ rows: 3, cols: 3 })
+    core.merge(0, 0, 1, 1)
+    const grid = core.getGrid()
+
+    const rect = getEditingRect(grid, { row: 1, col: 1 }, config)
+
+    expect(rect).toEqual({
+      x: 0,
+      y: 0,
+      width: 2 * 120,
+      height: 2 * 44,
+      rowSpan: 2,
+      colSpan: 2,
+    })
+  })
 })
