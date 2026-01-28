@@ -47,8 +47,8 @@ export default function CellEditorOverlay(props: {
       }}
       onBlur={() => {
         if (actionRef.current) return
-        actionRef.current = 'commit'
-        props.onCommit()
+        actionRef.current = 'cancel'
+        props.onCancel()
       }}
       className="absolute left-0 top-0 box-border border-2 border-indigo-500 outline-none bg-white shadow-lg rounded-sm transition-opacity animate-fade-in text-sm font-medium text-slate-900 focus:ring-2 focus:ring-indigo-200 p-0"
       style={{
