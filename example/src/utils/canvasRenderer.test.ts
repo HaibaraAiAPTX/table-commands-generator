@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { renderTable } from './canvasRenderer'
+import { renderTable, renderGridLayer, renderTextLayer } from './canvasRenderer'
 import type { CanvasConfig } from '../types'
 
 function mockCtx() {
@@ -59,5 +59,37 @@ describe('canvasRenderer', () => {
 
     // we still draw something for the main merged cell
     expect((ctx.clearRect as any).mock.calls.length).toBeGreaterThan(0)
+  })
+})
+
+describe('canvasRenderer layers', () => {
+  it('skips text inside the editing rect', () => {
+    const ctx = mockCtx()
+    const config: CanvasConfig = {
+      cellWidth: 100,
+      cellHeight: 40,
+      gridColor: '#e0e0e0',
+      selectionColor: 'rgba(59,130,246,0.2)',
+      textColor: '#333',
+      font: '14px sans-serif',
+    }
+
+    const grid = {
+      rows: 1,
+      cols: 1,
+      cells: new Map([[0, new Map([[0, {}]])]]),
+    }
+
+    renderTextLayer({
+      ctx,
+      width: 100,
+      height: 40,
+      grid: grid as any,
+      config,
+      cellText: () => 'Hello',
+      editingRect: { x: 0, y: 0, width: 100, height: 40 },
+    })
+
+    expect((ctx.fillText as any).mock.calls.length).toBe(0)
   })
 })
