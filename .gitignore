@@ -12,4 +12,6 @@ storybook-static
 
 .rslib/
 coverage/
-*/skills/skill-creator/
+.*/skills/
+
+.worktrees/
