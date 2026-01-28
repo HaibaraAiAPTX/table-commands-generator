@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { useZoom } from './CanvasViewport'
 
 export default function CellEditorOverlay(props: {
   open: boolean
@@ -13,8 +12,6 @@ export default function CellEditorOverlay(props: {
   onCancel: () => void
 }): JSX.Element | null {
   const ref = useRef<HTMLInputElement | null>(null)
-  const zoom = useZoom()
-  const scale = zoom / 100
 
   useEffect(() => {
     if (props.open) ref.current?.focus()
@@ -22,12 +19,10 @@ export default function CellEditorOverlay(props: {
 
   if (!props.open) return null
 
-  // The overlay is inside the scaled container, so we use unscaled coordinates
-  // CSS transform will automatically scale the element
-  // We only adjust border and font size to maintain visual consistency
-  const inverseScale = 1 / scale
-  const width = props.width - 2
-  const height = props.height - 2
+  const width = props.width + 2
+  const height = props.height + 2
+  const x = props.x - 1
+  const y = props.y - 1
 
   return (
     <input
@@ -43,16 +38,7 @@ export default function CellEditorOverlay(props: {
       style={{
         width: `${width}px`,
         height: `${height}px`,
-        transform: `translate(${props.x}px, ${props.y}px)`,
-        // Scale border inversely so it maintains visual width
-        borderWidth: `${Math.max(1, 2 / scale)}px`,
-        // Scale font inversely so text remains readable
-        fontSize: `${14 / scale}px`,
-        // Scale padding inversely
-        paddingLeft: `${8 / scale}px`,
-        paddingRight: `${8 / scale}px`,
-        paddingTop: `${6 / scale}px`,
-        paddingBottom: `${6 / scale}px`,
+        transform: `translate(${x}px, ${y}px)`,
       }}
     />
   )
