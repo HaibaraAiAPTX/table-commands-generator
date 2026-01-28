@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, forwardRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { RenderingData } from '@aptx/table-commands-generator'
 import type { CanvasConfig, EditingCell, Selection } from '../types'
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction'
-import { renderTable } from '../utils/canvasRenderer'
+import { renderGridLayer, renderTextLayer } from '../utils/canvasRenderer'
 import { useZoom } from './CanvasViewport'
 
 const DEFAULT_CONFIG: CanvasConfig = {
@@ -19,10 +19,12 @@ export default function TableCanvas(props: {
   selection: Selection | null
   cellText: (r: number, c: number) => string
   config?: CanvasConfig
+  editingRect?: { x: number; y: number; width: number; height: number } | null
   onSelectionChange: (sel: Selection) => void
   onCellDoubleClick: (cell: EditingCell) => void
 }): JSX.Element {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const gridCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const textCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const config = props.config ?? DEFAULT_CONFIG
   const zoom = useZoom()
   const scale = zoom / 100
@@ -49,7 +51,7 @@ export default function TableCanvas(props: {
   }, [props.selection])
 
   useEffect(() => {
-    const canvas = canvasRef.current
+    const canvas = gridCanvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -57,16 +59,35 @@ export default function TableCanvas(props: {
       ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
       return
     }
-    renderTable({
+    renderGridLayer({
       ctx,
       width: canvasSize.width,
       height: canvasSize.height,
       grid: props.grid,
       config,
       selection: selectionForRender,
-      cellText: props.cellText,
     })
-  }, [config, props.grid, canvasSize, props.cellText, selectionForRender])
+  }, [config, props.grid, canvasSize, selectionForRender])
+
+  useEffect(() => {
+    const canvas = textCanvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    if (!props.grid) {
+      ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
+      return
+    }
+    renderTextLayer({
+      ctx,
+      width: canvasSize.width,
+      height: canvasSize.height,
+      grid: props.grid,
+      config,
+      cellText: props.cellText,
+      editingRect: props.editingRect ?? undefined,
+    })
+  }, [config, props.grid, canvasSize, props.cellText, props.editingRect])
 
   const handlers = useCanvasInteraction({
     cellWidth: config.cellWidth,
@@ -78,18 +99,29 @@ export default function TableCanvas(props: {
   })
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={canvasSize.width}
-      height={canvasSize.height}
-      onMouseDown={handlers.onMouseDown}
-      onMouseMove={handlers.onMouseMove}
-      onMouseUp={handlers.onMouseUp}
-      onDoubleClick={handlers.onDoubleClick}
-      className="block bg-white cursor-crosshair"
-      style={{
-        display: 'block',
-      }}
-    />
+    <div
+      className="relative"
+      style={{ width: canvasSize.width, height: canvasSize.height }}
+    >
+      <canvas
+        ref={gridCanvasRef}
+        width={canvasSize.width}
+        height={canvasSize.height}
+        onMouseDown={handlers.onMouseDown}
+        onMouseMove={handlers.onMouseMove}
+        onMouseUp={handlers.onMouseUp}
+        onDoubleClick={handlers.onDoubleClick}
+        className="block bg-white cursor-crosshair"
+        style={{
+          display: 'block',
+        }}
+      />
+      <canvas
+        ref={textCanvasRef}
+        width={canvasSize.width}
+        height={canvasSize.height}
+        className="absolute left-0 top-0 pointer-events-none"
+      />
+    </div>
   )
 }

@@ -15,3 +15,22 @@ it('renders a canvas element', () => {
   )
   expect(container.querySelector('canvas')).toBeTruthy()
 })
+
+it('renders two canvas layers', () => {
+  const grid = {
+    rows: 1,
+    cols: 1,
+    cells: new Map([[0, new Map([[0, {}]])]]),
+  }
+  const { container } = render(
+    <TableCanvas
+      grid={grid as any}
+      selection={null}
+      cellText={() => ''}
+      onSelectionChange={() => {}}
+      onCellDoubleClick={() => {}}
+      editingRect={null}
+    />,
+  )
+  expect(container.querySelectorAll('canvas').length).toBe(2)
+})
