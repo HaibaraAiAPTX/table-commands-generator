@@ -5,6 +5,6 @@
     ]
   },
   "enabledPlugins": {
-    "glm-plan-bug@zai-coding-plugins": true
+    "glm-plan-bug@zai-coding-plugins": false
   }
 }
