@@ -5,3 +5,6 @@
 .opencode/
 
 node_modules/
+
+# 机器相关的私有源配置，不应入库
+.npmrc
