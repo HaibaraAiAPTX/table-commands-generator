@@ -159,6 +159,50 @@ export class TableCommandPlanner {
     })
   }
 
+  /**
+   * 收尾段：截取自 startIdx 起新生成的命令，推进内部镜像并返回；
+   * 无命令时返回 undefined
+   */
+  private flushNewCommands(startIdx: number): TableCommand[] | undefined {
+    const newly = this.generatedCommands.slice(startIdx)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
+  }
+
+  /**
+   * 合并段：预清理 + 主单元格 span 设置 +（可选）占位标记段
+   */
+  private pushMergeSegments(
+    startRow: number,
+    startCol: number,
+    endRow: number,
+    endCol: number,
+    includePlaceholderMarks: boolean,
+  ): void {
+    this.pushPreclearForRectangle(startRow, startCol, endRow, endCol)
+
+    const rowSpan = endRow - startRow + 1
+    const colSpan = endCol - startCol + 1
+    this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
+
+    if (!includePlaceholderMarks) return
+
+    for (let r = startRow; r <= endRow; r++) {
+      for (let c = startCol; c <= endCol; c++) {
+        if (r === startRow && c === startCol) continue
+        this.push({
+          type: 'SET_CELL_ATTR',
+          row: r,
+          col: c,
+          attr: 'isMergedPlaceholder',
+          value: true,
+        })
+      }
+    }
+  }
+
   /** 简单遍历：基于边界全表扫描（稀疏存储下依然安全，只是 O(R*C)） */
   public forEachMainMergedCell(visitor: (info: MergeCellInfo) => void) {
     const rows = this.core.getRowCount()
@@ -223,11 +267,7 @@ export class TableCommandPlanner {
       }
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /**
@@ -273,11 +313,7 @@ export class TableCommandPlanner {
       }
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /** --------------- 行列删除 --------------- */
@@ -390,11 +426,7 @@ export class TableCommandPlanner {
       }
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /**
@@ -505,11 +537,7 @@ export class TableCommandPlanner {
       }
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /** --------------- 合并/拆分 --------------- */
@@ -530,30 +558,9 @@ export class TableCommandPlanner {
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
 
-    this.pushPreclearForRectangle(startRow, startCol, endRow, endCol)
+    this.pushMergeSegments(startRow, startCol, endRow, endCol, true)
 
-    const rowSpan = endRow - startRow + 1
-    const colSpan = endCol - startCol + 1
-    this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
-
-    for (let r = startRow; r <= endRow; r++) {
-      for (let c = startCol; c <= endCol; c++) {
-        if (r === startRow && c === startCol) continue
-        this.push({
-          type: 'SET_CELL_ATTR',
-          row: r,
-          col: c,
-          attr: 'isMergedPlaceholder',
-          value: true,
-        })
-      }
-    }
-
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /**
@@ -574,17 +581,9 @@ export class TableCommandPlanner {
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
 
-    this.pushPreclearForRectangle(startRow, startCol, endRow, endCol)
+    this.pushMergeSegments(startRow, startCol, endRow, endCol, false)
 
-    const rowSpan = endRow - startRow + 1
-    const colSpan = endCol - startCol + 1
-    this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
-
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /**
@@ -665,11 +664,7 @@ export class TableCommandPlanner {
       this.pushSpanSet(entry.row, entry.col, entry.rowSpan, entry.colSpan)
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 
   /**
@@ -703,10 +698,6 @@ export class TableCommandPlanner {
       }
     }
 
-    const newly = this.generatedCommands.slice(startIdx)
-    if (newly.length) {
-      this.interpreter.applyCommands(newly)
-      return newly
-    }
+    return this.flushNewCommands(startIdx)
   }
 }

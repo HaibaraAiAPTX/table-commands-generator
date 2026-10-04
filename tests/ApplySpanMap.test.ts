@@ -1,13 +1,6 @@
 import { expect, test } from '@rstest/core'
-import { TableCommandPlanner, TableState } from '../src'
-import type { TableCommand } from '../src'
-
-function createTable(row: number, col: number) {
-  const core = new TableState(row, col)
-  const tx = new TableCommandPlanner(core)
-
-  return { core, tx }
-}
+import { TableState } from '../src'
+import { createTable, placeholderSetCount } from './helpers'
 
 /** 独立于存活 Map 的纯快照，用于断言镜像未被改动 */
 function snapshotGrid(core: TableState) {
@@ -18,15 +11,6 @@ function snapshotGrid(core: TableState) {
     })
   })
   return out
-}
-
-function placeholderSetCount(cmds: TableCommand[]): number {
-  return cmds.filter(
-    (c) =>
-      c.type === 'SET_CELL_ATTR' &&
-      c.attr === 'isMergedPlaceholder' &&
-      c.value === true,
-  ).length
 }
 
 test('applySpanMap re-lays all spans in one batch without placeholder SETs', () => {

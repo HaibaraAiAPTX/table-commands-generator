@@ -1,12 +1,6 @@
 import { expect, test } from '@rstest/core'
-import { TableCommand, TableCommandPlanner, TableState } from '../src'
-
-function createTable(row: number, col: number) {
-  const core = new TableState(row, col)
-  const tx = new TableCommandPlanner(core)
-
-  return { core, tx }
-}
+import { TableCommand } from '../src'
+import { createTable } from './helpers'
 
 /** 手工构建一个 2x2 合并批次（主单元格 (1,1)），模拟外部（绕过 planner）生成的命令 */
 function handBuiltMerge2x2(): TableCommand[] {

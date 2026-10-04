@@ -1,13 +1,7 @@
 import { expect, test } from '@rstest/core'
-import { TableCommandPlanner, TableState } from '../src'
-import type { Cell, TableCommand, WorksheetData } from '../src'
-
-function createTable(row: number, col: number) {
-  const core = new TableState(row, col)
-  const tx = new TableCommandPlanner(core)
-
-  return { core, tx }
-}
+import { TableState } from '../src'
+import type { Cell, WorksheetData } from '../src'
+import { createTable, placeholderSetCount } from './helpers'
 
 /** 去掉占位符标记，便于对 merge 与 mergeSpanOnly 的镜像状态做等价比较 */
 function stripPlaceholders(data: WorksheetData): WorksheetData {
@@ -38,15 +32,6 @@ function expectMirrorEquivalentExceptPlaceholders(
   expect(gridA.rows).toBe(gridB.rows)
   expect(gridA.cols).toBe(gridB.cols)
   expect(stripPlaceholders(gridA.cells)).toEqual(stripPlaceholders(gridB.cells))
-}
-
-function placeholderSetCount(cmds: TableCommand[]): number {
-  return cmds.filter(
-    (c) =>
-      c.type === 'SET_CELL_ATTR' &&
-      c.attr === 'isMergedPlaceholder' &&
-      c.value === true,
-  ).length
 }
 
 test('mergeSpanOnly emits zero isMergedPlaceholder SET commands', () => {
@@ -136,6 +121,21 @@ test('degenerate 1x1 rectangle behaves like merge() modulo placeholders', () => 
   // 该矩形下 merge() 本就没有占位 SET，两条命令序列一致
   expect(cmdsB).toEqual(cmdsA)
   expect(b.core.getCell(2, 2)).toBeUndefined()
+})
+
+test('out-of-bounds rectangle emits identical commands modulo placeholders', () => {
+  const a = createTable(5, 5)
+  const b = createTable(5, 5)
+  const cmdsA = a.tx.merge(4, 4, 9, 9)
+  const cmdsB = b.tx.mergeSpanOnly(4, 4, 9, 9)
+  if (!cmdsA || !cmdsB) throw new Error('both should return commands')
+  // 命令序列一致：merge() 版本去掉占位 SET 后应与 mergeSpanOnly 完全相同
+  const nonPlaceholderA = cmdsA.filter(
+    (c) => !(c.type === 'SET_CELL_ATTR' && c.attr === 'isMergedPlaceholder'),
+  )
+  expect(cmdsB).toEqual(nonPlaceholderA)
+  // 主单元格合并状态一致（merge() 的占位段会把边界撑大，属占位段自身副作用）
+  expect(b.core.getCell(4, 4)).toEqual(a.core.getCell(4, 4))
 })
 
 test('inverted rectangle behaves like merge() modulo placeholders', () => {
