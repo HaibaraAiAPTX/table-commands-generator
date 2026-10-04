@@ -188,6 +188,11 @@ test('applyCommandsToCore with externally fed DELETE_ROW shifts the mirror', () 
   // 后续决策基于平移后的镜像：unmerge 命中的是平移后的主单元格
   const cmds = tx.unmerge(0, 1)
   expect(cmds).toHaveLength(5)
-  expect(cmds).toContainEqual({ type: 'CLEAR_CELL_ATTR', row: 0, col: 1, attr: 'rowSpan' })
+  expect(cmds).toContainEqual({
+    type: 'CLEAR_CELL_ATTR',
+    row: 0,
+    col: 1,
+    attr: 'rowSpan',
+  })
   expect(core.getCell(0, 1)).toBeUndefined()
 })
