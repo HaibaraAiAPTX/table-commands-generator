@@ -52,6 +52,28 @@ export class TableCommandPlanner {
     return cmds
   }
 
+  /** --------------- 外部命令通道 --------------- */
+
+  /**
+   * 将外部构建的命令批次应用到内部镜像状态（core），使后续的规划决策
+   * （forEachMainMergedCell / unmerge / insertRow / deleteRow 等）基于
+   * 已包含外部命令的最新状态进行，避免外部绕过 planner 生成的批次
+   * 造成镜像与实际状态不同步。
+   *
+   * 命令通过与内部自动推进（每次生成批次后调用 interpreter.applyCommands）
+   * 相同的解释器应用，语义完全一致。
+   *
+   * 注意：
+   * - 仅推进镜像状态，不会把 `cmds` 追加到生成命令缓冲区
+   *   （getCommands / getNewCommandsAndReset 的输出不受影响）
+   * - 空批次为无操作
+   *
+   * @param cmds 外部构建的命令批次
+   */
+  public applyCommandsToCore(cmds: TableCommand[]): void {
+    this.interpreter.applyCommands(cmds)
+  }
+
   /** --------------- 基础工具 --------------- */
 
   private push(cmd: TableCommand) {
