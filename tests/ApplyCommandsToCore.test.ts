@@ -125,3 +125,69 @@ test('deleteRow after applyCommandsToCore shrinks the fed merge', () => {
   expect(merges).toEqual([{ row: 1, col: 1, rowSpan: 1, colSpan: 2 }])
   expect(core.getCell(1, 1)).toEqual({ merge: { rowSpan: 1, colSpan: 2 } })
 })
+
+test('applyCommandsToCore with an empty batch is a no-op', () => {
+  const { core, tx } = createTable(5, 5)
+  const before = core.getGridData()
+
+  tx.applyCommandsToCore([])
+
+  expect(core.getGridData()).toEqual(before)
+  expect(tx.getCommands()).toEqual([])
+})
+
+test('applyCommandsToCore with externally fed INSERT_ROW shifts the mirror', () => {
+  const { core, tx } = createTable(5, 5)
+  tx.merge(1, 1, 2, 2) // 主单元格 (1,1)
+  // 消费方取走 planner 生成的批次后再在外部追加结构命令
+  tx.getNewCommandsAndReset()
+
+  tx.applyCommandsToCore([{ type: 'INSERT_ROW', index: 0, count: 1 }])
+
+  expect(core.getRowCount()).toBe(6)
+  const merges: Array<{
+    row: number
+    col: number
+    rowSpan: number
+    colSpan: number
+  }> = []
+  tx.forEachMainMergedCell((info) => merges.push(info))
+  expect(merges).toEqual([{ row: 2, col: 1, rowSpan: 2, colSpan: 2 }])
+  expect(tx.getCommands()).toEqual([])
+
+  // 后续决策基于平移后的镜像：在平移后的 merge 上插入行生成正确的调整命令
+  const cmds = tx.insertRow(3)
+  expect(cmds?.[0]).toEqual({ type: 'INSERT_ROW', index: 3, count: 1 })
+  expect(cmds).toContainEqual({
+    type: 'SET_CELL_ATTR',
+    row: 2,
+    col: 1,
+    attr: 'rowSpan',
+    value: 3,
+  })
+})
+
+test('applyCommandsToCore with externally fed DELETE_ROW shifts the mirror', () => {
+  const { core, tx } = createTable(5, 5)
+  tx.merge(1, 1, 2, 2)
+  tx.getNewCommandsAndReset()
+
+  tx.applyCommandsToCore([{ type: 'DELETE_ROW', index: 0, count: 1 }])
+
+  expect(core.getRowCount()).toBe(4)
+  const merges: Array<{
+    row: number
+    col: number
+    rowSpan: number
+    colSpan: number
+  }> = []
+  tx.forEachMainMergedCell((info) => merges.push(info))
+  expect(merges).toEqual([{ row: 0, col: 1, rowSpan: 2, colSpan: 2 }])
+  expect(tx.getCommands()).toEqual([])
+
+  // 后续决策基于平移后的镜像：unmerge 命中的是平移后的主单元格
+  const cmds = tx.unmerge(0, 1)
+  expect(cmds).toHaveLength(5)
+  expect(cmds).toContainEqual({ type: 'CLEAR_CELL_ATTR', row: 0, col: 1, attr: 'rowSpan' })
+  expect(core.getCell(0, 1)).toBeUndefined()
+})
