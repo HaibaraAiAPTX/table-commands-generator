@@ -80,6 +80,75 @@ export class TableCommandPlanner {
     this.generatedCommands.push(cmd)
   }
 
+  /**
+   * 预清理段：清除目标矩形内所有已有合并
+   * （主单元格 span 清除 + 足迹占位标记清除）
+   */
+  private pushPreclearForRectangle(
+    startRow: number,
+    startCol: number,
+    endRow: number,
+    endCol: number,
+  ): void {
+    for (let r = startRow; r <= endRow; r++) {
+      for (let c = startCol; c <= endCol; c++) {
+        const cell = this.core.getCell(r, c)
+        if (cell?.merge) {
+          const rowSpan = cell.merge.rowSpan
+          const colSpan = cell.merge.colSpan
+          this.push({
+            type: 'CLEAR_CELL_ATTR',
+            row: r,
+            col: c,
+            attr: 'rowSpan',
+          })
+          this.push({
+            type: 'CLEAR_CELL_ATTR',
+            row: r,
+            col: c,
+            attr: 'colSpan',
+          })
+          for (let rr = r; rr < r + rowSpan; rr++) {
+            for (let cc = c; cc < c + colSpan; cc++) {
+              if (rr === r && cc === c) continue
+              this.push({
+                type: 'CLEAR_CELL_ATTR',
+                row: rr,
+                col: cc,
+                attr: 'isMergedPlaceholder',
+              })
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * 主单元格 span 设置段
+   */
+  private pushSpanSet(
+    row: number,
+    col: number,
+    rowSpan: number,
+    colSpan: number,
+  ): void {
+    this.push({
+      type: 'SET_CELL_ATTR',
+      row,
+      col,
+      attr: 'rowSpan',
+      value: rowSpan,
+    })
+    this.push({
+      type: 'SET_CELL_ATTR',
+      row,
+      col,
+      attr: 'colSpan',
+      value: colSpan,
+    })
+  }
+
   /** 简单遍历：基于边界全表扫描（稀疏存储下依然安全，只是 O(R*C)） */
   public forEachMainMergedCell(visitor: (info: MergeCellInfo) => void) {
     const rows = this.core.getRowCount()
@@ -451,55 +520,11 @@ export class TableCommandPlanner {
     this.callAutoClear()
     const startIdx = this.generatedCommands.length
 
-    for (let r = startRow; r <= endRow; r++) {
-      for (let c = startCol; c <= endCol; c++) {
-        const cell = this.core.getCell(r, c)
-        if (cell?.merge) {
-          const rowSpan = cell.merge.rowSpan
-          const colSpan = cell.merge.colSpan
-          this.push({
-            type: 'CLEAR_CELL_ATTR',
-            row: r,
-            col: c,
-            attr: 'rowSpan',
-          })
-          this.push({
-            type: 'CLEAR_CELL_ATTR',
-            row: r,
-            col: c,
-            attr: 'colSpan',
-          })
-          for (let rr = r; rr < r + rowSpan; rr++) {
-            for (let cc = c; cc < c + colSpan; cc++) {
-              if (rr === r && cc === c) continue
-              this.push({
-                type: 'CLEAR_CELL_ATTR',
-                row: rr,
-                col: cc,
-                attr: 'isMergedPlaceholder',
-              })
-            }
-          }
-        }
-      }
-    }
+    this.pushPreclearForRectangle(startRow, startCol, endRow, endCol)
 
     const rowSpan = endRow - startRow + 1
     const colSpan = endCol - startCol + 1
-    this.push({
-      type: 'SET_CELL_ATTR',
-      row: startRow,
-      col: startCol,
-      attr: 'rowSpan',
-      value: rowSpan,
-    })
-    this.push({
-      type: 'SET_CELL_ATTR',
-      row: startRow,
-      col: startCol,
-      attr: 'colSpan',
-      value: colSpan,
-    })
+    this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
 
     for (let r = startRow; r <= endRow; r++) {
       for (let c = startCol; c <= endCol; c++) {
@@ -513,6 +538,37 @@ export class TableCommandPlanner {
         })
       }
     }
+
+    const newly = this.generatedCommands.slice(startIdx)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
+  }
+
+  /**
+   * 仅跨距合并：与 merge() 语义一致，但省略 isMergedPlaceholder 占位标记段
+   * （无语义偏差，仅不产生占位标记 SET 命令）。
+   * 同样会自动推进内部镜像，并返回新生成的命令（无命令时返回 undefined）。
+   * @param startRow
+   * @param startCol
+   * @param endRow
+   * @param endCol
+   */
+  public mergeSpanOnly(
+    startRow: number,
+    startCol: number,
+    endRow: number,
+    endCol: number,
+  ): TableCommand[] | undefined {
+    this.callAutoClear()
+    const startIdx = this.generatedCommands.length
+
+    this.pushPreclearForRectangle(startRow, startCol, endRow, endCol)
+
+    const rowSpan = endRow - startRow + 1
+    const colSpan = endCol - startCol + 1
+    this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
 
     const newly = this.generatedCommands.slice(startIdx)
     if (newly.length) {
