@@ -4,9 +4,9 @@
 
 ### Minor Changes
 
-- e0912b2: Add `TableCommandPlanner.applyCommandsToCore()`: apply an externally authored command batch to the planner's internal mirror state so subsequent decisions (e.g. `forEachMainMergedCell`, `unmerge`, insert/delete span adjustments) stay in sync; the fed batch is not appended to the generated-command buffer.
-- 9a780c7: Add `applySpanMap()` to `TableCommandPlanner`: re-lay the whole table's merge spans in a single batch, without placeholder-marking commands.
-- f2d4550: Add `mergeSpanOnly()` to `TableCommandPlanner`: merge rectangle spans without emitting placeholder-marking commands.
+- 70a6788: Add `TableCommandPlanner.applyCommandsToCore()`: apply an externally authored command batch to the planner's internal mirror state so subsequent decisions (e.g. `forEachMainMergedCell`, `unmerge`, insert/delete span adjustments) stay in sync; the fed batch is not appended to the generated-command buffer.
+- 522e4af: Add `applySpanMap()` to `TableCommandPlanner`: re-lay the whole table's merge spans in a single batch, without placeholder-marking commands.
+- 073a43f: Add `mergeSpanOnly()` to `TableCommandPlanner`: merge rectangle spans without emitting placeholder-marking commands.
 
 ## 0.1.5
 
