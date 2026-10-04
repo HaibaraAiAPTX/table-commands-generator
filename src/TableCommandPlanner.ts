@@ -81,6 +81,40 @@ export class TableCommandPlanner {
   }
 
   /**
+   * 单个合并清除段：清除主单元格 span + 足迹占位标记
+   */
+  private pushClearMerge(
+    row: number,
+    col: number,
+    rowSpan: number,
+    colSpan: number,
+  ): void {
+    this.push({
+      type: 'CLEAR_CELL_ATTR',
+      row,
+      col,
+      attr: 'rowSpan',
+    })
+    this.push({
+      type: 'CLEAR_CELL_ATTR',
+      row,
+      col,
+      attr: 'colSpan',
+    })
+    for (let rr = row; rr < row + rowSpan; rr++) {
+      for (let cc = col; cc < col + colSpan; cc++) {
+        if (rr === row && cc === col) continue
+        this.push({
+          type: 'CLEAR_CELL_ATTR',
+          row: rr,
+          col: cc,
+          attr: 'isMergedPlaceholder',
+        })
+      }
+    }
+  }
+
+  /**
    * 预清理段：清除目标矩形内所有已有合并
    * （主单元格 span 清除 + 足迹占位标记清除）
    */
@@ -94,31 +128,7 @@ export class TableCommandPlanner {
       for (let c = startCol; c <= endCol; c++) {
         const cell = this.core.getCell(r, c)
         if (cell?.merge) {
-          const rowSpan = cell.merge.rowSpan
-          const colSpan = cell.merge.colSpan
-          this.push({
-            type: 'CLEAR_CELL_ATTR',
-            row: r,
-            col: c,
-            attr: 'rowSpan',
-          })
-          this.push({
-            type: 'CLEAR_CELL_ATTR',
-            row: r,
-            col: c,
-            attr: 'colSpan',
-          })
-          for (let rr = r; rr < r + rowSpan; rr++) {
-            for (let cc = c; cc < c + colSpan; cc++) {
-              if (rr === r && cc === c) continue
-              this.push({
-                type: 'CLEAR_CELL_ATTR',
-                row: rr,
-                col: cc,
-                attr: 'isMergedPlaceholder',
-              })
-            }
-          }
+          this.pushClearMerge(r, c, cell.merge.rowSpan, cell.merge.colSpan)
         }
       }
     }
@@ -569,6 +579,91 @@ export class TableCommandPlanner {
     const rowSpan = endRow - startRow + 1
     const colSpan = endCol - startCol + 1
     this.pushSpanSet(startRow, startCol, rowSpan, colSpan)
+
+    const newly = this.generatedCommands.slice(startIdx)
+    if (newly.length) {
+      this.interpreter.applyCommands(newly)
+      return newly
+    }
+  }
+
+  /**
+   * 全表跨距重排：以单个批次将整表合并状态重排为 map 所描述的状态。
+   *
+   * - map 中每个条目都被设置（主单元格 rowSpan/colSpan；1x1 条目等价于
+   *   取消该处合并）
+   * - 所有未与 map 条目完全一致的已有合并被清除（含足迹占位标记清理）
+   * - 不产生任何 isMergedPlaceholder SET 命令
+   *
+   * 校验先行：存在重叠条目、跨距 < 1 或越界单元格时，在任何命令生成前抛出，
+   * 内部镜像保持不变。成功时自动推进内部镜像并返回新生成的命令
+   * （无命令时返回 undefined）。
+   *
+   * @param map 主单元格跨距映射
+   */
+  public applySpanMap(map: MergeCellInfo[]): TableCommand[] | undefined {
+    const rowCount = this.core.getRowCount()
+    const colCount = this.core.getColCount()
+    for (const entry of map) {
+      if (entry.rowSpan < 1 || entry.colSpan < 1) {
+        throw new Error(
+          `applySpanMap: spans must be >= 1 (got rowSpan=${entry.rowSpan}, colSpan=${entry.colSpan})`,
+        )
+      }
+      if (entry.row < 0 || entry.col < 0) {
+        throw new Error(
+          `applySpanMap: cell indices must be >= 0 (got row=${entry.row}, col=${entry.col})`,
+        )
+      }
+      if (
+        entry.row + entry.rowSpan > rowCount ||
+        entry.col + entry.colSpan > colCount
+      ) {
+        throw new Error(
+          `applySpanMap: entry (${entry.row}, ${entry.col}) exceeds table bounds (${rowCount}x${colCount})`,
+        )
+      }
+    }
+    for (let i = 0; i < map.length; i++) {
+      for (let j = i + 1; j < map.length; j++) {
+        const a = map[i]
+        const b = map[j]
+        if (!a || !b) continue
+        if (
+          a.row < b.row + b.rowSpan &&
+          b.row < a.row + a.rowSpan &&
+          a.col < b.col + b.colSpan &&
+          b.col < a.col + a.colSpan
+        ) {
+          throw new Error(
+            `applySpanMap: entries (${a.row}, ${a.col}) and (${b.row}, ${b.col}) overlap`,
+          )
+        }
+      }
+    }
+
+    this.callAutoClear()
+    const startIdx = this.generatedCommands.length
+
+    // 快照现有合并：与 map 条目完全一致的跳过，其余清除（含足迹占位标记）
+    const mapSpans = new Map(map.map((m) => [`${m.row}:${m.col}`, m] as const))
+    const existing: MergeCellInfo[] = []
+    this.forEachMainMergedCell((info) => existing.push(info))
+    for (const old of existing) {
+      const target = mapSpans.get(`${old.row}:${old.col}`)
+      if (
+        target &&
+        target.rowSpan === old.rowSpan &&
+        target.colSpan === old.colSpan
+      ) {
+        continue
+      }
+      this.pushClearMerge(old.row, old.col, old.rowSpan, old.colSpan)
+    }
+
+    for (const entry of map) {
+      this.pushSpanSet(entry.row, entry.col, entry.rowSpan, entry.colSpan)
+    }
 
     const newly = this.generatedCommands.slice(startIdx)
     if (newly.length) {
