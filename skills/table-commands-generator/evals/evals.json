@@ -1,0 +1,45 @@
+{
+  "skill_name": "table-commands-generator",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "我在用 @aptx/table-commands-generator（本仓库的 npm 包）做一个带协同编辑的表格模块。外部模块会绕过 TableCommandPlanner，直接构建自己的命令批次应用到 TableState 上（比如手工拼的合并单元格命令）。问题是这之后我再用 planner 的 insertRow、unmerge 时，它生成的调整命令完全不知道外部加的那个合并。请写一个能跑的 rstest 测试文件（风格参考仓库 tests/ 目录），演示如何让 planner 在外部应用命令之后保持后续决策正确。",
+      "expected_output": "一个可运行的 rstest 测试文件，通过 TableCommandPlanner.applyCommandsToCore() 把外部应用的批次同步给 planner，使后续 planner 操作（insertRow/unmerge 等）正确感知外部创建的合并；且不会把 planner 自己生成的命令再喂回去。",
+      "files": [],
+      "expectations": [
+        "Solution feeds the externally applied batch through TableCommandPlanner.applyCommandsToCore()",
+        "Each batch is applied exactly once: planner-generated commands are not fed back, and a batch applied to the same core instance by an external interpreter is not applied again (replaying a peer-planner batch into a different planner is allowed)",
+        "A subsequent planner operation (insertRow/unmerge/deleteRow) demonstrably accounts for the externally created merge in its generated commands",
+        "Deliverable is a runnable rstest test file following the repo's tests/ conventions",
+        "Outputs include captured execution evidence (test-runner summary or demo output with the pass count)"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "我们的表格渲染器是直接根据主单元格的 rowSpan/colSpan 计算覆盖区域的，不读 isMergedPlaceholder。现在用 TableCommandPlanner 的 merge() 每次都会额外生成一堆 SET isMergedPlaceholder 命令，命令流太吵。@aptx/table-commands-generator 有没有办法只生成跨距命令？写个可运行例子：5x5 的表合并 (1,1)-(3,4) 这个 3x4 区域，对比普通 merge 和这个办法各生成多少条命令。",
+      "expected_output": "示例使用 TableCommandPlanner.mergeSpanOnly()；生成的批次中零条 isMergedPlaceholder SET 命令；对同一 3x4 区域给出 merge 与 mergeSpanOnly 的命令数量对比。",
+      "files": [],
+      "expectations": [
+        "Solution uses TableCommandPlanner.mergeSpanOnly() for the placeholder-free merge",
+        "The generated batch for the 3x4 region contains zero isMergedPlaceholder SET commands",
+        "Compares command counts of merge() vs mergeSpanOnly() for the same region (merge: 13 commands, mergeSpanOnly: 2 commands)",
+        "Example runs against a 5x5 table merging region (1,1)-(3,4)",
+        "The main cell ends with rowSpan=3/colSpan=4 (span-value correctness, not just command counts)",
+        "Outputs include captured execution evidence (demo output or test-runner summary)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "用 @aptx/table-commands-generator 实现表格布局恢复：用户保存过一份合并布局（主单元格跨距列表，如 [{row:0,col:0,rowSpan:1,colSpan:6},{row:1,col:1,rowSpan:3,colSpan:3}]），要把一张 6x6、还留着旧合并的表一次性重排回这份布局。要求：单个命令批次完成；布局数据非法（条目重叠、跨距<1、越界）时要在表被改动之前报错。写实现代码和简单测试。",
+      "expected_output": "实现使用 TableCommandPlanner.applySpanMap() 传入完整目标布局；非法布局（重叠/跨距<1/越界）在任何改动发生前被拒绝；返回的批次经解释器应用并验证最终布局。",
+      "files": [],
+      "expectations": [
+        "Solution uses TableCommandPlanner.applySpanMap() with the complete target layout",
+        "Invalid layouts (overlapping entries, span<1, out-of-bounds) are rejected before any table mutation",
+        "The returned batch is applied via a CommandInterpreter and the final layout is verified (e.g. forEachMainMergedCell or getCell checks)",
+        "The restore is emitted as a single command batch, not per-entry merge/unmerge calls",
+        "Outputs include captured execution evidence (test-runner summary with the pass count)"
+      ]
+    }
+  ]
+}

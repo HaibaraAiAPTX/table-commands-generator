@@ -16,11 +16,13 @@ public merge(
 Use `merge()` to merge a rectangular region of cells into a single merged cell. If the region contains existing merged cells, they will be automatically unmerged first.
 
 **When to use:**
+
 - When creating merged cell headers (spanning multiple rows/columns)
 - When grouping related data visually
 - When creating title cells or labels that span multiple cells
 
 **When NOT to use:**
+
 - Do NOT use to merge non-contiguous cells (must be rectangular)
 - Do NOT use when the region contains data that should be preserved
 
@@ -31,10 +33,12 @@ Use `merge()` to merge a rectangular region of cells into a single merged cell. 
 Row index of the top-left corner of the merge region.
 
 **Valid values:**
+
 - `>= 0` - Non-negative integer
 - Must be <= `endRow`
 
 **Behavior:**
+
 - Defines the first row of the merge region
 - This cell becomes the main merged cell
 
@@ -43,10 +47,12 @@ Row index of the top-left corner of the merge region.
 Column index of the top-left corner of the merge region.
 
 **Valid values:**
+
 - `>= 0` - Non-negative integer
 - Must be <= `endCol`
 
 **Behavior:**
+
 - Defines the first column of the merge region
 - This cell becomes the main merged cell
 
@@ -55,10 +61,12 @@ Column index of the top-left corner of the merge region.
 Row index of the bottom-right corner of the merge region.
 
 **Valid values:**
+
 - `>= startRow` - Must be >= startRow
 - Can exceed current table size (table will expand)
 
 **Behavior:**
+
 - Defines the last row of the merge region
 - Inclusive: the cell at `endRow` is included in the merge
 
@@ -67,10 +75,12 @@ Row index of the bottom-right corner of the merge region.
 Column index of the bottom-right corner of the merge region.
 
 **Valid values:**
+
 - `>= startCol` - Must be >= startCol
 - Can exceed current table size (table will expand)
 
 **Behavior:**
+
 - Defines the last column of the merge region
 - Inclusive: the cell at `endCol` is included in the merge
 
@@ -82,6 +92,7 @@ Returns `TableCommand[] | undefined`:
 - `undefined` - If the merge region is invalid or no commands needed
 
 **Why undefined?**
+
 - The merge region might already be merged as specified
 - The region might be a single cell (startRow === endRow && startCol === endCol) with no existing merge to clear
 
@@ -89,23 +100,27 @@ Returns `TableCommand[] | undefined`:
 
 ### Automatic Unmerge of Overlapping Regions
 
-**Key behavior:** If the merge region overlaps with any existing merged cells, those existing merges are automatically cleared first.
+**Key behavior:** If existing merged cells have their **main cell inside the merge region**, those merges are automatically cleared first. A pre-existing merge whose main cell lies **outside** the region is left untouched — even when its footprint (covered cells) touches or overlaps the region edge.
 
 **Why automatic unmerge?**
+
 - Ensures consistent merge state
 - Prevents nested or overlapping merges
 - Simplifies merge operations (no manual cleanup needed)
 
-**Overlap detection:**
+**Preclear trigger (main-cell containment):**
+
 ```
-Two rectangles overlap if:
-  NOT (newRegion.endRow < existing.row OR
-       newRegion.row > existing.endRow OR
-       newRegion.endCol < existing.col OR
-       newRegion.col > existing.endCol)
+An existing merge at (row, col) is cleared if and only if:
+  newRegion.startRow <= row <= newRegion.endRow AND
+  newRegion.startCol <= col <= newRegion.endCol
+
+(The merge attributes live only on the main cell, so scanning the
+region for cells carrying a `merge` attribute finds exactly these.)
 ```
 
 **Example of automatic unmerge:**
+
 ```typescript
 // Existing merge: cell at (1,1) spans 2x2, covers (1,1)-(2,2)
 planner.merge(1, 1, 2, 2)
@@ -124,17 +139,20 @@ planner.merge(0, 0, 3, 3)
 // 8-15. SET_CELL_ATTR placeholders for all covered cells
 ```
 
-**What happens to existing merges:**
+**What happens to existing merges (main cell inside the region):**
+
 - Main cell: merge attributes are cleared
 - Covered cells: placeholder flags are cleared
 - All traces of the old merge are removed
 - New merge is created in its place
 
+**Not cleared:** merges whose main cell lies outside the region — verify before merging a rectangle that merely overlaps another merge's footprint, since the result can contain overlapping merges.
+
 ### Merge Steps
 
-1. **Unmerge existing overlaps**
-   - Find all merged cells that overlap the new region
-   - Clear their merge attributes and placeholder flags
+1. **Preclear merges anchored inside the region**
+   - Scan the region for cells carrying merge attributes (main cells)
+   - Clear their spans and footprint placeholder flags
    - This ensures a clean slate for the new merge
 
 2. **Set main cell spans**
@@ -149,6 +167,7 @@ planner.merge(0, 0, 3, 3)
 ### Visual Example
 
 **Before merge:**
+
 ```
 [·] [·] [·] [·]  [·] = empty cell
 [·] [M:2×2] [P]  [M] = main merged cell
@@ -156,6 +175,7 @@ planner.merge(0, 0, 3, 3)
 ```
 
 **Execute `merge(0, 0, 2, 2)`:**
+
 ```
 // Step 1: Clear existing merge at (1,1)
 // Step 2: Create new 3x3 merge at (0,0)
@@ -163,6 +183,7 @@ planner.merge(0, 0, 3, 3)
 ```
 
 **After merge:**
+
 ```
 [M:3×3] [P] [P] [·]
 [P] [P] [P] [·]
@@ -194,6 +215,7 @@ planner.merge(0, 0, 3, 3)
 ## Common Pitfalls
 
 1. **Not checking for undefined**
+
    ```typescript
    // BAD: Assumes commands are always generated
    const commands = planner.merge(0, 0, 2, 2)
@@ -207,6 +229,7 @@ planner.merge(0, 0, 3, 3)
    ```
 
 2. **Wrong coordinate order**
+
    ```typescript
    // BAD: startRow > endRow
    planner.merge(5, 0, 2, 2) // Undefined behavior
@@ -215,19 +238,31 @@ planner.merge(0, 0, 3, 3)
    planner.merge(2, 0, 5, 2)
    ```
 
-3. **Forgetting existing merges**
-   ```typescript
-   // BAD: Doesn't account for existing merges being cleared
-   const commands = planner.merge(0, 0, 2, 2)
-   // If (1,1) was already merged, that merge is now gone
+3. **Assuming every overlapping merge gets cleared**
 
-   // GOOD: Understand that merge() handles cleanup automatically
+   ```typescript
+   // BAD: assumes "overlapping" means footprint overlap
+   planner.merge(0, 0, 3, 3) // Existing merge at (0,0) 2x2 → cleared (main inside)
+   planner.merge(2, 2, 4, 4) // Existing merge at (0,0) 3x3 → NOT cleared:
+   //                           its main cell (0,0) is outside (2,2)-(4,4),
+   //                           even though its footprint overlaps (2,2)
+
+   // GOOD: unmerge outside merges yourself when footprints must not survive
+   const outside = planner.unmerge(0, 0)
+   if (outside) interpreter.applyCommands(outside)
+   planner.merge(2, 2, 4, 4)
    ```
+
+   (Behavior verified against `pushPreclearForRectangle` in `src/TableCommandPlanner.ts` — it clears cells carrying a `merge` attribute inside the rectangle, i.e. main cells only.)
 
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import {
+  TableState,
+  TableCommandPlanner,
+  BuildinStateInterpreter,
+} from '@aptx/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)
@@ -271,7 +306,7 @@ function safeMerge(
   startRow: number,
   startCol: number,
   endRow: number,
-  endCol: number
+  endCol: number,
 ): boolean {
   // Validate coordinates
   if (startRow > endRow || startCol > endCol) {
@@ -300,7 +335,11 @@ function safeMerge(
 safeMerge(planner, interpreter, 5, 5, 7, 8)
 
 // Scenario 5: Checking merge result
-function getMergeInfo(table: TableState, row: number, col: number): {
+function getMergeInfo(
+  table: TableState,
+  row: number,
+  col: number,
+): {
   isMerged: boolean
   rowSpan: number
   colSpan: number
@@ -326,7 +365,7 @@ function createHeaderMerges(
   planner: TableCommandPlanner,
   interpreter: BuildinStateInterpreter,
   headerRowCount: number,
-  colCount: number
+  colCount: number,
 ): void {
   const allCommands: TableCommand[] = []
 
@@ -350,7 +389,7 @@ function unmerge(
   planner: TableCommandPlanner,
   interpreter: BuildinStateInterpreter,
   row: number,
-  col: number
+  col: number,
 ): boolean {
   const cell = table.getCell(row, col)
 
@@ -369,6 +408,8 @@ function unmerge(
 
 ## Related APIs
 
+- `TableCommandPlanner.mergeSpanOnly()` - Same merge without placeholder-marking commands
+- `TableCommandPlanner.applySpanMap()` - Re-lay the whole table's merge layout in one batch
 - `TableCommandPlanner.unmerge()` - Unmerge a previously merged cell
 - `TableState.getCell()` - Check if a cell is merged
 - `TableCommandPlanner.forEachMainMergedCell()` - Iterate over all merged cells
