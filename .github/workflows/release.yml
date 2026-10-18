@@ -1,26 +1,25 @@
 name: Release
 
+# Publishing is tag-driven: push a `v*` tag on the commit whose `package.json`
+# version you want to ship (e.g. `git tag v0.2.1 && git push origin v0.2.1`).
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Version or publish
+  publish:
+    name: Publish to npm
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create the release PR / tag and GitHub releases
-      pull-requests: write # open and update the "Version Packages" PR
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -38,23 +37,20 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Create release PR or publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          # Opens/updates the "Version Packages" PR, then publishes when it is merged.
-          version: pnpm run version-packages
-          publish: pnpm run release
-          commit: 'chore: release'
-          title: 'chore: release'
+      # Fail before touching the registry if the tag and package.json disagree.
+      - name: Verify tag matches package.json version
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          pkg_version="$(node -p "require('./package.json').version")"
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $pkg_version."
+            echo "Bump the version (merge the Version Packages PR) and tag that commit instead."
+            exit 1
+          fi
+          echo "Publishing $pkg_version from tag $GITHUB_REF_NAME."
+
+      - name: Publish to npm
+        run: pnpm run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-          if-no-files-found: error
