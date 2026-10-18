@@ -1,5 +1,11 @@
 # @aptx-js/table-commands-generator
 
+## 0.2.1
+
+### Patch Changes
+
+- 383b039: 包作用域从私有 registry 的 `@aptx` 迁移到公网 npm 的 `@aptx-js`，API 无破坏性变更。
+
 ## 0.2.0
 
 ### Minor Changes

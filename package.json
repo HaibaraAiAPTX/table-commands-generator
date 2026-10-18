@@ -1,6 +1,6 @@
 {
   "name": "@aptx-js/table-commands-generator",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "packageManager": "pnpm@11.2.2",
   "type": "module",
   "description": "a simple table operation commands generator",

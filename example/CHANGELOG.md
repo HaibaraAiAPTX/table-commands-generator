@@ -1,5 +1,12 @@
 # table-canvas-demo
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [383b039]
+  - @aptx-js/table-commands-generator@0.2.1
+
 ## 0.0.1
 
 ### Patch Changes
