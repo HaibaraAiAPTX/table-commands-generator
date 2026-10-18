@@ -4,7 +4,7 @@ import {
   TableState,
   type RenderingData,
   type TableCommand,
-} from '@aptx/table-commands-generator'
+} from '@aptx-js/table-commands-generator'
 
 export interface TableCore {
   getGrid(): RenderingData

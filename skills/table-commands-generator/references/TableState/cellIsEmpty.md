@@ -117,7 +117,7 @@ Returns `boolean`:
 ## Complete Example
 
 ```typescript
-import { TableState, Cell } from '@aptx/table-commands-generator'
+import { TableState, Cell } from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)

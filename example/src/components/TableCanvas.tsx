@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import type { CanvasConfig, EditingCell, Selection } from '../types'
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction'
 import { renderGridLayer, renderTextLayer } from '../utils/canvasRenderer'

@@ -1,7 +1,7 @@
 # Table-Core Canvas 测试项目设计
 
 **日期:** 2026-01-26
-**目标:** 创建一个 React + TypeScript 项目，使用 Canvas 渲染表格，测试 @aptx/table-commands-generator 的功能
+**目标:** 创建一个 React + TypeScript 项目，使用 Canvas 渲染表格，测试 @aptx-js/table-commands-generator 的功能
 
 ---
 
@@ -15,7 +15,7 @@
 
 - **框架:** React 18 + TypeScript
 - **构建工具:** Vite
-- **核心库:** @aptx/table-commands-generator
+- **核心库:** @aptx-js/table-commands-generator
 - **渲染:** HTML5 Canvas
 - **状态管理:** React Hooks
 
@@ -313,7 +313,7 @@ interface CanvasConfig {
 
 ### 阶段 1: 项目初始化
 - [ ] 创建 Vite + React + TypeScript 项目
-- [ ] 安装依赖: @aptx/table-commands-generator
+- [ ] 安装依赖: @aptx-js/table-commands-generator
 - [ ] 创建项目结构目录
 - [ ] 配置 TypeScript 类型
 

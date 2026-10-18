@@ -106,7 +106,7 @@ Returns `void` (no return value).
 ## Complete Example
 
 ```typescript
-import { BuildinStateInterpreter, TableState, TableCommandPlanner, TableCommand } from '@aptx/table-commands-generator'
+import { BuildinStateInterpreter, TableState, TableCommandPlanner, TableCommand } from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)

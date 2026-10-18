@@ -1,4 +1,4 @@
-# @aptx/table-commands-generator
+# @aptx-js/table-commands-generator
 
 ## 0.2.0
 

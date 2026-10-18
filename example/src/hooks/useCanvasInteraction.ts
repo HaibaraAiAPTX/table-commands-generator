@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import type { EditingCell, Selection } from '../types'
 import { pointToCell } from '../utils/coords'
 import { findMergedCellMain } from '../utils/mergedCells'

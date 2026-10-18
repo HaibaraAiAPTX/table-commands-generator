@@ -212,7 +212,7 @@ import {
   BuildinStateInterpreter,
   StructuralCommand,
   TableCommand
-} from '@aptx/table-commands-generator'
+} from '@aptx-js/table-commands-generator'
 
 // Context: Implementing a custom command interpreter for database-backed tables
 // Setup

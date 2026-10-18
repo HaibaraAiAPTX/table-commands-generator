@@ -1,5 +1,5 @@
 {
-  "name": "@aptx/table-commands-generator",
+  "name": "@aptx-js/table-commands-generator",
   "version": "0.2.0",
   "type": "module",
   "description": "a simple table operation commands generator",
@@ -13,9 +13,23 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HaibaraAiAPTX/table-commands-generator.git"
+  },
+  "homepage": "https://github.com/HaibaraAiAPTX/table-commands-generator#readme",
+  "bugs": {
+    "url": "https://github.com/HaibaraAiAPTX/table-commands-generator/issues"
+  },
   "scripts": {
     "example:dev": "cd example && pnpm dev",
     "build": "rslib build",
+    "release": "pnpm run build && changeset publish",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
     "dev": "rslib build --watch",
     "format": "prettier --write .",
     "lint": "eslint .",

@@ -128,7 +128,7 @@ Returns `TableCommand[]` - Array of all cached commands.
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Inspection before execution
 const table = new TableState(10, 10)

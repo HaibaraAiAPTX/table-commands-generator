@@ -1,6 +1,6 @@
 # Table Commands Generator - Skill 优化指南
 
-本指南为 AI 辅助使用 `@aptx/table-commands-generator` 库提供深度参考，补充核心 SKILL.md 中未涵盖的关键细节。
+本指南为 AI 辅助使用 `@aptx-js/table-commands-generator` 库提供深度参考，补充核心 SKILL.md 中未涵盖的关键细节。
 
 ## 目录
 
@@ -214,7 +214,7 @@ planner.merge(0, 0, 2, 2)  // 合并 (0,0) 到 (2,2)
 ### 场景 1：初始化表格
 
 ```typescript
-import { TableState, TableCommandPlanner } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner } from '@aptx-js/table-commands-generator'
 
 // 创建空表格
 const table = new TableState(10, 10)  // 10 行 × 10 列
@@ -308,7 +308,7 @@ class TableHistory {
 
 ```typescript
 import React, { useState, useCallback } from 'react'
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx-js/table-commands-generator'
 
 function TableComponent() {
   const [table] = useState(() => new TableState(10, 10))
@@ -986,7 +986,7 @@ visualizeTable(table)
 
 ## 总结
 
-本指南涵盖了 `@aptx/table-commands-generator` 库的核心概念、行为细节、使用场景、性能优化、扩展开发和常见陷阱。作为 AI 辅助开发的参考，建议：
+本指南涵盖了 `@aptx-js/table-commands-generator` 库的核心概念、行为细节、使用场景、性能优化、扩展开发和常见陷阱。作为 AI 辅助开发的参考，建议：
 
 1. **优先使用 TableCommandPlanner**：避免直接操作 TableState
 2. **注意合并单元格调整规则**：插入/删除操作会自动调整合并单元格

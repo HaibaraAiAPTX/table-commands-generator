@@ -128,7 +128,7 @@ The instance starts with:
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Empty table that grows dynamically
 // Setup

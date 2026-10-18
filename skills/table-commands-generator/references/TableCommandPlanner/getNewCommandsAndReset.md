@@ -134,7 +134,7 @@ for (let i = 0; i < 10000; i++) {
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Basic command retrieval and reset
 const table = new TableState(10, 10)

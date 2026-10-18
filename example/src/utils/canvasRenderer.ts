@@ -1,4 +1,4 @@
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import type { CanvasConfig } from '../types'
 
 export function renderGridLayer(args: {

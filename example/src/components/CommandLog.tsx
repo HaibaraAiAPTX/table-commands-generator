@@ -1,4 +1,4 @@
-import type { TableCommand } from '@aptx/table-commands-generator'
+import type { TableCommand } from '@aptx-js/table-commands-generator'
 import { Card } from './ui/card'
 import { Badge } from './ui/badge'
 

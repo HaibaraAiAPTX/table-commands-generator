@@ -100,7 +100,7 @@ console.log(table.getRowCount()) // 6 (rows 0-5)
 ## Complete Example
 
 ```typescript
-import { TableState } from '@aptx/table-commands-generator'
+import { TableState } from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)

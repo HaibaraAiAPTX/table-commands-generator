@@ -27,7 +27,7 @@
     "types": ["vitest/globals", "@testing-library/jest-dom"],
 
     "paths": {
-      "@aptx/table-commands-generator": ["../src/"]
+      "@aptx-js/table-commands-generator": ["../src/"]
     }
   },
   "include": ["src"]

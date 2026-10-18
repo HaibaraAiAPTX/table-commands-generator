@@ -139,7 +139,7 @@ Returns a new `TableCommandPlanner` instance.
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Normal usage (autoClear enabled - default)
 const table = new TableState(10, 10)

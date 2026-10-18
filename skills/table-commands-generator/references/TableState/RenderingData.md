@@ -153,7 +153,7 @@ for (const [row, rowMap] of data.cells) {
 ## Complete Example
 
 ```typescript
-import { TableState, RenderingData } from '@aptx/table-commands-generator'
+import { TableState, RenderingData } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Type-safe function signature
 function renderTable(data: RenderingData, container: HTMLElement): void {

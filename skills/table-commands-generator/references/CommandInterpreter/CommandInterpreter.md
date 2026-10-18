@@ -163,7 +163,7 @@ The base class automatically detects and handles both cases.
 ## Complete Example
 
 ```typescript
-import { CommandInterpreter, TableCommand } from '@aptx/table-commands-generator'
+import { CommandInterpreter, TableCommand } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: DOM-based interpreter
 class DOMInterpreter extends CommandInterpreter {

@@ -1,4 +1,4 @@
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 
 /**
  * Find the main cell of a merged area.

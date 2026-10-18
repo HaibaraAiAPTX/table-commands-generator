@@ -119,7 +119,7 @@ const interpreter = new BuildinStateInterpreter(table)
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx-js/table-commands-generator'
 
 // Scenario 1: Basic setup and command execution
 const table = new TableState(10, 10)

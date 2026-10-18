@@ -157,7 +157,7 @@ for (const [row, rowMap] of worksheetData) {
 ## Complete Example
 
 ```typescript
-import { TableState } from '@aptx/table-commands-generator'
+import { TableState } from '@aptx-js/table-commands-generator'
 
 // Context: Implementing a custom table serializer that exports to JSON
 // Setup

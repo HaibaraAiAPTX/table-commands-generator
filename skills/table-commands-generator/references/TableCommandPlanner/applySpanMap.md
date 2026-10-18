@@ -151,7 +151,7 @@ import {
   TableState,
   TableCommandPlanner,
   BuildinStateInterpreter,
-} from '@aptx/table-commands-generator'
+} from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(6, 6)

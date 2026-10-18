@@ -84,7 +84,7 @@ Use the `Cell` interface to represent individual cell data in a table. This is t
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner } from '@aptx-js/table-commands-generator'
 
 // Context: Creating a table with merged header cells
 // Setup

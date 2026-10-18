@@ -162,7 +162,7 @@ For each merged cell that spans the insertion point, placeholder cells are creat
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter } from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)

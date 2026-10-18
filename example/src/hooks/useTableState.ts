@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { TableCommand, RenderingData } from '@aptx/table-commands-generator'
+import type { TableCommand, RenderingData } from '@aptx-js/table-commands-generator'
 import type { CellContents, EditingCell, Selection } from '../types'
 import { createTableCore, type TableCore } from '../table/tableCore'
 

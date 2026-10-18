@@ -279,7 +279,7 @@ import {
   TableCommandPlanner,
   BuildinStateInterpreter,
   CellCommand
-} from '@aptx/table-commands-generator'
+} from '@aptx-js/table-commands-generator'
 
 // Context: Implementing cell-level audit logging
 // Setup

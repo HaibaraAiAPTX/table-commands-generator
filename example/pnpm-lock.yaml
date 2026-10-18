@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@aptx/table-commands-generator':
+      '@aptx-js/table-commands-generator':
         specifier: ^0.1.5
         version: 0.1.5
       react:
@@ -57,7 +57,7 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@aptx/table-commands-generator@0.1.5':
+  '@aptx-js/table-commands-generator@0.1.5':
     resolution: {integrity: sha512-k5FV15Frk1zqNQqLX5Ycm+eLK1A7ZV9w0ar1REJ4SQpJ4R8SnOaeLK/NuE6D7Bcx74Wt7T5FZ8tOT0xMuRlOoA==}
 
   '@asamuzakjp/css-color@3.2.0':
@@ -1169,7 +1169,7 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@aptx/table-commands-generator@0.1.5': {}
+  '@aptx-js/table-commands-generator@0.1.5': {}
 
   '@asamuzakjp/css-color@3.2.0':
     dependencies:

@@ -114,7 +114,7 @@ Returns `RenderingData` containing:
 ## Complete Example
 
 ```typescript
-import { TableState, RenderingData } from '@aptx/table-commands-generator'
+import { TableState, RenderingData } from '@aptx-js/table-commands-generator'
 
 // Setup
 const table = new TableState(10, 10)

@@ -11,7 +11,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@aptx/table-commands-generator": "workspace:*",
+    "@aptx-js/table-commands-generator": "workspace:*",
     "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

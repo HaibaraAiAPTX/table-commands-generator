@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import { expandSelectionToMergedCells } from '../hooks/useCanvasInteraction'
 import { findMergedCellMain } from './mergedCells'
 

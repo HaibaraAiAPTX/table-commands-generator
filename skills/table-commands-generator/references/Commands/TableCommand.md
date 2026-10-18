@@ -126,7 +126,7 @@ function handleCommand(cmd: TableCommand) {
 ## Complete Example
 
 ```typescript
-import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx/table-commands-generator'
+import { TableState, TableCommandPlanner, BuildinStateInterpreter, TableCommand } from '@aptx-js/table-commands-generator'
 
 // Context: Implementing command recording and replay for undo/redo
 // Setup

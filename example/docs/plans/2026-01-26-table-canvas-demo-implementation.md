@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Build a Vite + React + TypeScript app that renders a table via HTML Canvas and exercises `@aptx/table-commands-generator` (select/range select, merge/unmerge, insert/delete rows/cols) while logging generated commands.
+**Goal:** Build a Vite + React + TypeScript app that renders a table via HTML Canvas and exercises `@aptx-js/table-commands-generator` (select/range select, merge/unmerge, insert/delete rows/cols) while logging generated commands.
 
 **Architecture:** Keep the table “structure/merge” state inside `TableState` and apply operations via `TableCommandPlanner` + `BuildinStateInterpreter`. Keep UI state (selection, editing, cell text map, command history) in a single `useTableState` hook. Canvas is a pure renderer over `TableState.getGridData()` plus UI overlays for selection + cell editor.
 
-**Tech Stack:** React 18, TypeScript, Vite, Vitest + Testing Library, HTML Canvas, `@aptx/table-commands-generator`.
+**Tech Stack:** React 18, TypeScript, Vite, Vitest + Testing Library, HTML Canvas, `@aptx-js/table-commands-generator`.
 
 ---
 
@@ -231,7 +231,7 @@ git commit -m "test: add selection normalization helpers"
 
 ---
 
-### Task 3: Add `@aptx/table-commands-generator` and a thin command pipeline
+### Task 3: Add `@aptx-js/table-commands-generator` and a thin command pipeline
 
 **Files:**
 - Create: `src/table/tableCore.ts`
@@ -268,7 +268,7 @@ Expected: FAIL because `createTableCore` does not exist and the dependency is no
 Install:
 
 ```bash
-npm i @aptx/table-commands-generator
+npm i @aptx-js/table-commands-generator
 ```
 
 Create `src/table/tableCore.ts`:
@@ -280,7 +280,7 @@ import {
   TableState,
   type RenderingData,
   type TableCommand,
-} from '@aptx/table-commands-generator'
+} from '@aptx-js/table-commands-generator'
 
 export interface TableCore {
   getGrid(): RenderingData
@@ -376,7 +376,7 @@ Create `src/hooks/useTableState.ts`:
 
 ```ts
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { TableCommand, RenderingData } from '@aptx/table-commands-generator'
+import type { TableCommand, RenderingData } from '@aptx-js/table-commands-generator'
 import type { CellContents, EditingCell, Selection } from '../types'
 import { createTableCore, type TableCore } from '../table/tableCore'
 
@@ -579,7 +579,7 @@ Fix test import by adding `import { vi } from 'vitest'` at top.
 Create `src/utils/canvasRenderer.ts`:
 
 ```ts
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import type { CanvasConfig } from '../types'
 
 export function renderTable(args: {
@@ -692,7 +692,7 @@ Create `src/components/TableCanvas.tsx`:
 
 ```tsx
 import { useEffect, useMemo, useRef } from 'react'
-import type { RenderingData } from '@aptx/table-commands-generator'
+import type { RenderingData } from '@aptx-js/table-commands-generator'
 import type { CanvasConfig, EditingCell, Selection } from '../types'
 import { renderTable } from '../utils/canvasRenderer'
 
@@ -1102,7 +1102,7 @@ Expected: FAIL because `CommandLog` does not exist.
 Create `src/components/CommandLog.tsx`:
 
 ```tsx
-import type { TableCommand } from '@aptx/table-commands-generator'
+import type { TableCommand } from '@aptx-js/table-commands-generator'
 
 export default function CommandLog(props: { history: TableCommand[][] }): JSX.Element {
   if (props.history.length === 0) return <aside><h2>Commands</h2><p>No commands yet.</p></aside>
