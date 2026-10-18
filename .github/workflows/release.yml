@@ -1,7 +1,8 @@
 name: Release
 
-# Publishing is tag-driven: push a `v*` tag on the commit whose `package.json`
-# version you want to ship (e.g. `git tag v0.2.1 && git push origin v0.2.1`).
+# Publishing is tag-driven. Versions are maintained by hand: bump the version in
+# package.json (and CHANGELOG.md), commit on main, then push a matching `v*` tag
+# on that commit — e.g. `git tag v0.2.1 && git push origin v0.2.1`.
 on:
   push:
     tags:
@@ -44,7 +45,7 @@ jobs:
           pkg_version="$(node -p "require('./package.json').version")"
           if [ "$tag_version" != "$pkg_version" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $pkg_version."
-            echo "Bump the version (merge the Version Packages PR) and tag that commit instead."
+            echo "Bump the version in package.json and tag that commit instead."
             exit 1
           fi
           echo "Publishing $pkg_version from tag $GITHUB_REF_NAME."

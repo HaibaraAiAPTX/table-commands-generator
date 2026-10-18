@@ -29,8 +29,7 @@
   "scripts": {
     "example:dev": "cd example && pnpm dev",
     "build": "rslib build",
-    "release": "pnpm run build && changeset publish",
-    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "pnpm run build && pnpm publish --no-git-checks",
     "dev": "rslib build --watch",
     "format": "prettier --write .",
     "lint": "eslint .",
